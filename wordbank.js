@@ -45,6 +45,11 @@ var Wordbank = function() {
       var body = env.stack.pop();
       env.bank.addWord(name.value, body.type, body.value);
     });
+
+    bank.addWord('run', 'func', function(env) {
+      var lambda = env.stack.pop();
+      env.evalLambda(lambda, env);
+    });
   };
 
   // Bootstrap the wordbank

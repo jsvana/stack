@@ -10,27 +10,6 @@ var EvalException = function(message, data) {
   }
 };
 
-/*
- * Takes tokens from the tokenizer and evaluates the program
- */
-var eval = function(root) {
-  var env = {
-    bank: new Wordbank(),
-    stack: new EvalStack()
-  };
-
-  if (root.type !== 'root') {
-    throw new EvalException('Root-level element not present');
-  }
-
-  evalLambda(root, env);
-
-  console.log('\nend program\n');
-
-  env.stack.log();
-  env.bank.log();
-};
-
 var evalLambda = function(lambda, env) {
   var entries = lambda.value;
 
@@ -59,6 +38,28 @@ var evalLambda = function(lambda, env) {
       break;
     }
   });
+};
+
+/*
+ * Takes tokens from the tokenizer and evaluates the program
+ */
+var eval = function(root) {
+  var env = {
+    bank: new Wordbank(),
+    stack: new EvalStack(),
+    evalLambda: evalLambda
+  };
+
+  if (root.type !== 'root') {
+    throw new EvalException('Root-level element not present');
+  }
+
+  evalLambda(root, env);
+
+  console.log('\nend program\n');
+
+  env.stack.log();
+  env.bank.log();
 };
 
 module.exports = {
