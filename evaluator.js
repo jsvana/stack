@@ -13,29 +13,52 @@ var EvalException = function(message, data) {
 /*
  * Takes tokens from the tokenizer and evaluates the program
  */
-var eval = function(tokens) {
+var eval = function(root) {
   var env = {
     bank: new Wordbank(),
     stack: new EvalStack()
   };
 
-  tokens.forEach(function(token) {
-    switch (token.type) {
-    case 'word':
-      if (!env.bank.evalWord(token.value, env)) {
-	throw new EvalException('Unknown word "' + token.value + '"');
-      }
-      break;
-    default:
-      env.stack.push(token);
-      break;
-    }
-  });
+  if (root.type !== 'root') {
+    throw new EvalException('Root-level element not present');
+  }
+
+  evalLambda(root, env);
 
   console.log('\nend program\n');
 
   env.stack.log();
   env.bank.log();
+};
+
+var evalLambda = function(lambda, env) {
+  var entries = lambda.value;
+
+  entries.forEach(function(entry) {
+    switch (entry.type) {
+    case 'word':
+      var word = env.bank.getWord(entry.value);
+
+      if (!word) {
+	throw new EvalException('Unknown word "' + entry.value + '"');
+      }
+
+      switch (word.type) {
+      case 'func':
+	word.value(env);
+	break;
+      case 'lambda':
+	evalLambda(word, env);
+	break;
+      default:
+	env.stack.push(word);
+      }
+      break;
+    default:
+      env.stack.push(entry);
+      break;
+    }
+  });
 };
 
 module.exports = {

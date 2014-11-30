@@ -10,71 +10,58 @@ var TokenizerException = function(message, data) {
 
 var TOKENS = {
   begin_lambda: {
-    regex: /\[/,
+    regex: /^\[$/,
   },
   end_lambda: {
-    regex: /\]/,
+    regex: /^\]$/,
   },
 
   number: {
-    regex: /-?[0-9]+/,
+    regex: /^-?\d+$/,
     transform: function(val) {
       return parseInt(val);
     }
   },
 
   bool: {
-    regex: /(true|false)/,
+    regex: /^(true|false)$/,
     transform: function(val) {
       return val === 'true';
     }
   },
 
   string: {
-    regex: /"[^\s]+"/,
+    regex: /^"[^\s]+"$/,
     transform: function(val) {
       return val.replace(/"/g, '');
     }
   },
 
   word: {
-    regex: /[^\s]+/
+    regex: /^[^\s]+$/
   }
 };
 
 var tokenize = function(input) {
   var words = input.split(/\s+/);
-  var tokens = [];
 
-  // Stuff for lambdas
-  var state = 'normal';
-  var lambdaTokens = [];
+  // Stack of entries
+  var entries = [];
+  entries.push(new Entry('root', []));
 
   words.forEach(function(word) {
     var token = new Entry('none', '');
 
     if (word.match(TOKENS['begin_lambda'].regex)) {
-      if (state === 'normal') {
-	state = 'lambda';
-	return;
-      } else {
-	throw new TokenizerException('Bad state (nested lambdas not allowed)');
-      }
+      entries.push(new Entry('lambda', []));
+      return;
     }
 
     if (word.match(TOKENS['end_lambda'].regex)) {
-      if (state === 'lambda') {
-	token.type = 'lambda';
-	token.value = lambdaTokens;
-	tokens.push(token);
+      var entry = entries.pop();
+      entries[entries.length - 1].value.push(entry);
 
-	state = 'normal';
-
-	lambdaTokens = [];
-	return;
-      } else {
-	throw new TokenizerException('Bad state (nested lambdas not allowed)');
-      }
+      return;
     }
 
     for (var key in TOKENS) {
@@ -90,15 +77,11 @@ var tokenize = function(input) {
     }
 
     if (token.type !== 'none') {
-      if (state === 'normal') {
-	tokens.push(token);
-      } else {
-	lambdaTokens.push(token);
-      }
+      entries[entries.length - 1].value.push(token);
     }
   });
 
-  return tokens;
+  return entries.pop();
 };
 
 module.exports = {

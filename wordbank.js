@@ -8,42 +8,51 @@ var Wordbank = function() {
     words[word] = new Entry(type, value);
   };
 
-  this.addWord('=', 'func', function(env) {
-    var a = env.stack.pop();
-    var b = env.stack.pop();
+  var bootstrap = function(bank) {
+    bank.addWord('=', 'func', function(env) {
+      var a = env.stack.pop();
+      var b = env.stack.pop();
 
-    var res = new Entry('bool', a.value === b.value);
+      var res = new Entry('bool', a.value === b.value);
 
-    env.stack.push(res);
-  });
+      env.stack.push(res);
+    });
 
-  this.addWord('+', 'func', function(env) {
-    var a = env.stack.pop();
-    var b = env.stack.pop();
+    bank.addWord('+', 'func', function(env) {
+      var a = env.stack.pop();
+      var b = env.stack.pop();
 
-    var res = new Entry('number', a.value + b.value);
+      var res = new Entry('number', a.value + b.value);
 
-    env.stack.push(res);
-  });
+      env.stack.push(res);
+    });
 
-  this.addWord('disp', 'func', function(env) {
-    var a = env.stack.pop();
-    console.log('[display] ' + a.value);
-  });
+    bank.addWord('disp', 'func', function(env) {
+      var a = env.stack.pop();
+      console.log('[display] ' + a.value);
+    });
 
-  this.addWord('dup', 'func', function(env) {
-    env.stack.push(env.stack.peek());
-  });
+    bank.addWord('dup', 'func', function(env) {
+      env.stack.push(env.stack.peek());
+    });
 
-  this.addWord('drop', 'func', function(env) {
-    env.stack.pop();
-  });
+    bank.addWord('drop', 'func', function(env) {
+      env.stack.pop();
+    });
 
-  this.addWord('def', 'func', function(env) {
-    var name = env.stack.pop();
-    var body = env.stack.pop();
-    env.bank.addWord(name.value, body.type, body.value);
-  });
+    bank.addWord('def', 'func', function(env) {
+      var name = env.stack.pop();
+      var body = env.stack.pop();
+      env.bank.addWord(name.value, body.type, body.value);
+    });
+  };
+
+  // Bootstrap the wordbank
+  bootstrap(this);
+
+  this.getWord = function(key) {
+    return words[key];
+  };
 
   /* Attempts to evaluate a word
    * Returns boolean representing whether or not word exists
@@ -66,7 +75,7 @@ var Wordbank = function() {
     console.log('[wordbank-log] <<<<');
     for (var key in words) {
       var word = words[key];
-      console.log('[wordbank-log] ' + word.logString());
+      console.log('[wordbank-log] ' + key + ': ' + word.logString());
     }
     console.log('[wordbank-log] >>>>');
   };

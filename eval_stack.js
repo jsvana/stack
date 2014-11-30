@@ -15,6 +15,7 @@ var EvalStack = function() {
 
   this.pop = function() {
     if (this.empty()) {
+      console.trace('Stack is empty');
       throw new EvalStackException('Stack is empty');
     }
 
@@ -27,6 +28,7 @@ var EvalStack = function() {
 
   this.peek = function(val) {
     if (this.empty()) {
+      console.trace('Stack is empty');
       throw new EvalStackException('Stack is empty');
     }
 

@@ -4,10 +4,11 @@ var Entry = function(type, value) {
 
   this.logString = function() {
     switch (this.type) {
+    case 'root':
     case 'lambda':
       var values = this.value.map(function(e) {
 	return e.logString();
-      }).join(' ');
+      }).join(', ');
 
       return '(lambda) [ ' + values + ' ]';
     default:
