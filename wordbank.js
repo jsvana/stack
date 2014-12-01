@@ -1,4 +1,8 @@
+var fs = require('fs');
+var util = require('util');
+
 var Entry = require('./entry').Entry;
+var tokenize = require('./tokenizer').tokenize;
 
 /* lol, walrus */
 var Wordbank = function() {
@@ -29,7 +33,7 @@ var Wordbank = function() {
 
     bank.addWord('disp', 'func', function(env) {
       var a = env.stack.pop();
-      console.log('[display] ' + a.value);
+      util.print(a.value);
     });
 
     bank.addWord('dup', 'func', function(env) {
@@ -49,6 +53,16 @@ var Wordbank = function() {
     bank.addWord('run', 'func', function(env) {
       var lambda = env.stack.pop();
       env.evalLambda(lambda, env);
+    });
+
+    bank.addWord('use', 'func', function(env) {
+      var libName = env.stack.pop();
+
+      var libData = fs.readFileSync('./lib/' + libName.value + '.stk', 'utf-8');
+
+      var body = tokenize(libData);
+
+      env.evalLambda(body, env);
     });
   };
 

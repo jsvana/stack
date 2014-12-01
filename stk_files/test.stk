@@ -1,11 +1,5 @@
-4 "four" def
-4
-[ 1 + ] "addOne" def
-1 1 =
-disp
-addOne
-disp
-[
-  [ 2 = ] "is2" def
-]
-run
+"base" use
+
+"Hello" disp
+1 -1 + disp
+".\n" disp
